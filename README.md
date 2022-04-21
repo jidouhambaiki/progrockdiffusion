@@ -1,183 +1,41 @@
-# progrockdiffusion
-A command line version of [Disco Diffusion](https://github.com/alembics/disco-diffusion).
+# Prog Rock Diffusion
+A command line version of [Disco Diffusion](https://github.com/alembics/disco-diffusion) for still image generation.
+*Animations are not currently supported.*
 
-# Quick note on updating:
-A new version was released today, April 5 2022. If you are trying to update you'll need to install a few additional items:
-```
-git clone https://github.com/facebookresearch/SLIP.git
-pip install json5 numexpr
-```
+In addition to Disco Diffusion's great features, Prog Rock has the following benefits:
 
-# Hardware prerequisites
-You will need at least 16gb of RAM if not using a GPU.
-An Nvidia GPU is *highly* recommended! The speed improvement is massive.
-8gb is probably the minimum amount of GPU memory.
+- Uses your own hardware
+- GPU and CPU modes are supported (note: CPU mode is quite slow)
+- Works offline (once the required files are downloaded). No more colab disconnects!
+- Can be invoked from a script or batch file for mass unattended batches
+- Multiple partial settings files are supported, allowing you to layer settings
+- Some variables can be randomized to help you explore the possible outputs of a prompt
+- If you put \_artist\_ in your prompt, it will be replaced with a randomly selected artist
+- Adding --gobig to your command will automatically upscale the result by slicing it and re-rendering those slices
+- Optional automatic brightness and contrast fixing (save you from those blown-out results!)
 
-This author has an RTX 3080 with 10gb and it runs fairly well, but some advanced features are not possible with "only" 10gb.
+# Table of Contents
 
-You'll also need between 20 and 40gb of free disk space, depending on which models you enable.
+- [REQUIREMENTS](#requirements)
+- [INSTALL](#installation)
+- [UPDATE](#update)
+- [HOW-TO USE & EXAMPLES](#how-to)
 
-# Software prerequisties
-## Linux
-Ubuntu 20.04 or similar (A docker environment, VM, or Windows Subsystem for Linux should work provided it can access your GPU).
+# [Requirements]
+- GPU: An Nvidia GPU is *highly* recommended! The speed improvement is massive. 8gb is probably the minimum amount of GPU memory. This author has an RTX 3080 with 10gb and it runs fairly well, but some advanced features are not possible with "only" 10gb. As for AMD cards, I have not had a chance to test one. If you're interested in helping me figure out if it's possible, drop me a note in the issues page.
+- CPU: For CPU mode, you will need at least 16gb of RAM.
+- STORAGE: you'll need at least 40gb of free disk space, depending on which models you enable.
 
-If using a GPU: CUDA 11.4+ (installation instructions can be found here: https://developer.nvidia.com/cuda-11-4-1-download-archive).
+# [Installation]
+Follow the appropriate guide for your platform:
+## [Linux](INSTALL-Linux.md)
+## [Windows](INSTALL-Windows.md)
+## [MacOS](INSTALL-MacOS.md)
 
-## Windows
-Windows 10 or 11 (If using a GPU, NVIDIA drivers installed)
-Other versions may work but are untested
-
-## MacOS
-Minimal testing has been done with the latest MacOS on an M1 Macbook Air.
-PLEASE NOTE: GPU acceleration is not yet supported. It will work, but it will be *slow.*
-
-## If using an NVIDIA GPU, test NVIDIA drivers
-You can test that your environment is working properly by running:
-
-```
-nvidia-smi
-```
-
-The output should indicate a driver version, CUDA version, and so on. If you get an error, stop here and troubleshoot how to get Nvidia drivers, CUDA, and/or a connection to your GPU with the environment you're using.
-
-# First time setup
-
-## Download and install Anaconda
-**[Linux]**
-```
-sudo apt update
-sudo apt upgrade -y
-wget https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh
-bash Anaconda3-2021.11-Linux-x86_64.sh
-respond 'yes' to accept license terms and provide install dir when prompted
-respond 'yes' to run conda initialization
-```
-Logout and back in for the changes to take effect
-
-
-**[Windows]**
-```
-Download from here and install: https://www.anaconda.com/products/individual
-```
-From the start menu, open a "Anaconda Powershell Prompt" (*Powershell* is important)
-
-**[MacOS]**
-
-Install Homebrew:
-```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-Restart your terminal, then:
-```
-brew install miniforge
-conda init zsh
-```
-Restart your terminal again.
-
-## Create prog rock diffusion env
-
-**[Linux and Windows]**
-```
-conda create --name progrockdiffusion python=3.7
-```
-
-**[MacOS]**
-```
-conda create --name progrockdiffusion python=3.8
-```
-
-**[All Platforms]**
-```
-conda activate progrockdiffusion
-conda install -c anaconda git
-```
-
-Now change to whatever base directory you want ProgRockDiffusion to go into.
-## Clone the prog rock diffusion repo
-```
-git clone https://github.com/lowfuel/progrockdiffusion.git
-cd progrockdiffusion
-```
-**Note: the "cd" command above is important, as the next steps will add additional libraries and data to ProgRockDiffusion**
-
-**From here on out, this is the directory you'll want to be in when you use the program.**
-
-## Install the required libraries and tools
-```
-git clone https://github.com/crowsonkb/guided-diffusion
-git clone https://github.com/openai/CLIP.git
-git clone https://github.com/facebookresearch/SLIP.git
-git clone https://github.com/assafshocher/ResizeRight.git
-git clone https://github.com/CompVis/latent-diffusion.git
-git clone https://github.com/CompVis/taming-transformers
-pip install -e ./CLIP
-pip install -e ./guided-diffusion
-pip install -e ./taming-transformers
-pip install lpips datetime timm json5 numexpr
-```
-## Basic or GPU Accelerated PyTorch
-You defnitely should install the GPU version if you have an NVIDIA card. It's almost 30x faster.
-Otherwise, you can install the CPU version instead (required for MacOS)
-
-### EITHER Install GPU accelerated PyTorch
-```
-pip install torch==1.10.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-pip install torchvision==0.11.3+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-pip install torchaudio==0.10.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-```
-
-### OR install the basic CPU version of PyTorch (warning - very slow!)
-```
-pip install torch==1.11.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-pip install torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-pip install torchaudio==0.11.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-```
-
-## Install remaining libraries and tools
-**[MacOS]**
-```
-export GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
-export GRPC_PYTHON_BUILD_SYSTEM_ZLIB=1
-pip install grpcio
-```
-**[All Platforms]**
-```
-pip install ipywidgets omegaconf pytorch_lightning einops
-pip install matplotlib pandas
-conda install opencv
-```
-**[Linux]** Depending on your Linux platform, you may get an error about libGL.so.1
-If you do, try installing these dependencies:
-```
-sudo apt-get install ffmpeg libsm6 libxext6 -y
-```
-**[Linux]** Finally:
-```
-sudo apt install imagemagick
-```
-
-## Optional Animation support
-You'll need to install ffmpeg if you want to do animations.
-
-**[Windows]**
-Download from here: https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
-
-Inside the 7z file look for ffmpeg.exe and extract it into your progrockdiffusion directory (or any directory that's in your path)
-
-**[Linux]**
-```
-sudo apt-get install ffmpeg
-```
-
-# Use
+# [HOW-TO]
 
 NOTE: On your first run it might appear to hang. Let it go for a good while, though, as it might just be downloading models.
 Somtimes there is no feedback during the download process (why? Who knows)
-
-If you've opened a new terminal or powershell prompt, you may need to activate your ProgRockDiffusion session again:
-```
-conda activate progrockdiffusion
-```
 
 CD to the directory where you installed ProgRockDiffusion. Now you're ready!
 
@@ -258,15 +116,15 @@ Settings.json is **always loaded**, and any specified after that are layered on 
 For example you could have a settings file that just contains a higher width, height, and more steps, for when you want to make a high-quality image.
 Layer that on top of your regular settings and it will apply those values without changing anything else.
 
-# Tips and Troubleshooting
-## Get a random artist
+## Tips and Troubleshooting
+### Get a random artist
 In your prompt, if you use \_artist\_ instead of an artists name, an artist will be picked at random from artists.txt
 
-## If you get an error about pandas needing a different verison of numpy, you can try:
+### If you get an error about pandas needing a different verison of numpy, you can try:
 ```
 pip install --force-reinstall numpy
 ```
-## If you are getting "OMP: Error #15: Initializing libiomp5md.dll, but found libiomp5md.dll already initialized"
+### If you are getting "OMP: Error #15: Initializing libiomp5md.dll, but found libiomp5md.dll already initialized"
 This seems to be because of a Pytorch compiling bug for Intel CPUs.
 You can set an environment variable that will fix this, either on your machine (if you know how to do that), or by editing prd.py.
 To do it by editing prd.py, find the line that says "import os" and add the following right below it:
@@ -274,8 +132,10 @@ To do it by editing prd.py, find the line that says "import os" and add the foll
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 ```
 
-## Switch between GPU and CPU modes
-Let's assume you installed the GPU version. You can adjust these instructions if you did CPU first, of course.
+### Switch between GPU and CPU modes
+This is an advanced technique and requires some expertise. The main issue is you need to be able to switch between two pytorch versions. The easiest way to accomplish that is to do your install twice, each within a separate conda environment using Anaconda. I leave it up to you to learn how to do that.
+Once you've installed Anaconda and re-installed ProgRockDiffusion within a conda environment, you can create a second environment that is a clone of the first, but with a different pytorch, like so:
+
 Clone your existing conda environment:
 ```
 conda create --name prdcpu --clone progrockdiffusion
@@ -283,20 +143,13 @@ conda activate prdcpu
 ```
 Now install the CPU version of pytorch:
 ```
-pip install torch==1.11.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-pip install torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-pip install torchaudio==0.11.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
+pip install -r requirements.cpu.txt
 ```
 All set! You can now switch between the two by simply doing:
 ```
 conda activate progrockdiffusion
 conda activate prdcpu
 ```
-
-# Notes
-
-- Currently Superres Sampling doesn't work, it will crash.
-- Animations are untested but likely not working
 
 # TODO
 
