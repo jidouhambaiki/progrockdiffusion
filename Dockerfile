@@ -33,8 +33,12 @@ RUN echo "!! Installing python 3 and pip" && \
     apt-get -y install python3 && \
     apt-get -y install python3-pip
 
+RUN echo "!! Installing Node.js v16" && \
+    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs
+
 RUN echo "!! Pulling the various repos" && \
-    git clone https://github.com/lowfuel/progrockdiffusion.git && \
+    git clone https://github.com/jidouhambaiki/progrockdiffusion.git && \
     cd progrockdiffusion && \
     git clone https://github.com/crowsonkb/guided-diffusion && \
     git clone https://github.com/openai/CLIP.git && \
@@ -59,10 +63,15 @@ RUN echo "!! install torch, torchvision, torchaudio, imagemagic, ffmpeg, misc" &
     apt-get install ffmpeg libsm6 libxext6 -y && \
     apt install imagemagick caca-utils -y && \
     pip install ipywidgets omegaconf pytorch_lightning einops && \
-    pip install matplotlib pandas
+    pip install matplotlib pandas json5 numexpr
 
 RUN echo "!! Run a single fake frame to get the default model downloaded and baked into the image" && \
     cd progrockdiffusion && \
     python3 prd.py
 
-# CMD /bin/bash
+# :: ---
+
+WORKDIR progrockdiffusion
+
+ENTRYPOINT ["python3", "prd.py"]
+CMD ["-p", "The fiery abyss, unreal engine, detail by konstantin gorbatov, greg rutkowski and thomas kinkade, featured on artstation."]
