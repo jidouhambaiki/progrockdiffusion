@@ -6,7 +6,7 @@
         ]
     },
     "n_batches": 1,
-    "steps": 500,
+    "steps": 150,
     "display_rate": 10,
     "width": 640,
     "height": 640,
